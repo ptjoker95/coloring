@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 def coloring( edges, solution, node_count, ith ):
-    if min(solution) != 0 or ith > 2:
+    if not 0 in solution:
         return
     #nodes는 node들의 edge수를 넣는 리스트
     nodes = [0]*node_count
@@ -10,32 +10,35 @@ def coloring( edges, solution, node_count, ith ):
     for edge in edges:
         nodes[edge[0]] += 1
         nodes[edge[1]] += 1
-    print"nodes: ", nodes
+    #print"nodes: ", nodes
     
     #가장 많은 edge를 가지고 있는 node의 index를 찾아낸다.
     index = nodes.index(max(nodes))
-    print"index: ", index
+    if(solution[index] == 0):
+        solution[index] = ith
+    else:
+        ith = max(solution)
+    #print"index: ", index
     #ith는 i번째 색깔이라는 의미임
-    solution[index] = ith
-    print "solution: ", solution
-    print "before edges: ", edges
+    
+    #print "solution: ", solution
+    #print "before edges: ", edges
     #선택된 node에 연결되어 있는 edge를 다 찾아다니며 색칠을 한다. 다만, 이미 색칠이 칠해져있는 경우에는 패스한다.
     for edge in edges:
         #print "edge[0]: ", edge[0], " ,edge[1]: ", edge[1]
         if edge[0] == index:
-            if solution[edge[1]] is 0:
-                #print"here 1"
+            if solution[edge[1]] == 0:
                 solution[edge[1]] = ith+1
-                edges.remove(edge)
+            edges.remove(edge)
                 #printedges
         if edge[1] == index:
-            if solution[edge[0]] is 0:
+            if solution[edge[0]] == 0:
                 #print"here 2"
                 solution[edge[0]] = ith+1
-                edges.remove(edge)
+            edges.remove(edge)
                 #printedges
     
-    print "after edges: ", edges
+    #print "after edges: ", edges
     
     coloring( edges, solution, node_count, ith+1 )
     
