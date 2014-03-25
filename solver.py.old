@@ -1,0 +1,151 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# 어떤 노드에 연결되어 있는 노드 중에 색칠이 칠해져있는지 확인해주고, 무슨 색이 칠해져있는지 확인해주는 함수
+def IsThereColoredNode ( node, edges, solution ):
+    trueorfalse = False
+    ColoredConnected = []
+    
+    # edge 리스트를 죽 흝어본다.
+    for edge in edges:
+        # edge 리스트 중에 찾고자 하는 노드가 있으면
+        if node in edge:
+            # edge에서 찾고자 하는 노드를 빼고 다른 노드에 색깔이 칠해져있는지, 이 경우에는 0 이외의 숫자, 확인
+            temp = list(edge)
+            temp.remove(node)
+            if solution[temp[0]] is not 0:
+                # 일단은 칠해져있는 모든 노드를 리턴해본다. temp는 칠해져있는 노드의 인덱스, solution[temp]는 칠해져있는 값 
+                ColoredConnected = [ temp, solution[temp] ]
+                trueorfalse = True
+    return trueorfalse, ColoredConnected
+            
+
+def coloring( node, edges, solution, node_count, ith ):
+    if not 0 in solution:
+        return
+    
+    # 입력된 노드에 색을 칠한다.
+    # 다만 선택된 노드 주변에 칠하고자 하는 색깔이 같은 것이 있으면 다른 색으로 칠한다.
+    solution[node] = ith
+    print solution
+    
+    # 입력된 노드에 연결되어 있는 노드를 따로 빼내본다.
+    ConnectedNodetoThis = []
+    
+    for edge in edges:
+        if node in edge:
+            ConnectedNodetoThis.append(edge)
+    
+     #위의 기능이 제대로 되는지 확인
+    #print ConnectedNodetoThis
+     #의도되로 됨
+    
+    # 위에 연결되어 있는 노드 중 맨 앞의 노드를 지정해서 색을 칠한다.
+    templist = list(ConnectedNodetoThis[0])
+    templist.remove(node)
+    SelectedNode = templist[0]
+    
+    #잘 돌아가는 확인
+   # print "ConnectedNodetoThis[0]: ", ConnectedNodetoThis[0] , "node: ", node, "SelectedNode: ", SelectedNode
+    coloring( SelectedNode, edges, solution, node_count, ith+1 )
+    
+    #print IsThereColoredNode( node, edges, solution)
+    
+    #색을 다 칠했으면 빠져나간다.
+
+    '''
+    if(solution[index] == 0):
+        solution[index] = ith
+    else:
+        ith = max(solution)
+    '''
+    #print"index: ", index
+    #ith는 i번째 색깔이라는 의미임
+    
+    #print "solution: ", solution
+    #print "before edges: ", edges
+    #선택된 node에 연결되어 있는 edge를 다 찾아다니며 색칠을 한다. 다만, 이미 색칠이 칠해져있는 경우에는 패스한다.
+    '''
+    for edge in edges:
+        #print "edge[0]: ", edge[0], " ,edge[1]: ", edge[1]
+        if edge[0] == index:
+            if solution[edge[1]] == 0:
+                solution[edge[1]] = ith+1
+            edges.remove(edge)
+                #printedges
+        if edge[1] == index:
+            if solution[edge[0]] == 0:
+                #print"here 2"
+                solution[edge[0]] = ith+1
+            edges.remove(edge)
+                #printedges
+    
+    #print "after edges: ", edges
+    
+    coloring( edges, solution, node_count, ith+1 )
+    '''
+def solve_it(input_data):
+    # Modify this code to run your optimization algorithm
+
+    # parse the input
+    lines = input_data.split('\n')
+
+    first_line = lines[0].split()
+    node_count = int(first_line[0])
+    edge_count = int(first_line[1])
+
+    edges = []
+    for i in range(1, edge_count + 1):
+        line = lines[i]
+        parts = line.split()
+        edges.append((int(parts[0]), int(parts[1])))
+    
+    solution = [0] * node_count
+    #edge의 갯수가 많은 node를 찾는다
+    
+    #nodes는 node들의 edge수를 넣는 리스트
+    nodes = [0]*node_count
+    #nodes에 각 node별 edge의 갯수를 더한다.
+    for edge in edges:
+        nodes[edge[0]] += 1
+        nodes[edge[1]] += 1
+    #print"nodes: ", nodes
+    
+    #가장 많은 edge를 가지고 있는 node의 index를 찾아낸다.
+    SelectedNode = nodes.index(max(nodes))
+    
+    coloring( SelectedNode, edges, solution, node_count, 1 )
+    '''
+    index = nodes.index(max(nodes))
+        print "index: ", index 
+        solution[index] = i
+        print "solution: ", solution
+        nodes[index] = 0
+        for edge in edges:
+            if edge[0] is index or edge[1] is index:
+                print "this node"
+    '''
+    # build a trivial solution
+    # every node has its own color
+    
+    #애초에 색칠을 1부터 시작해서, solution의 값들에서 1을 빼준다.
+    solution[:] = [x - 1 for x in solution]
+
+    # prepare the solution in the specified output format
+    output_data = str(node_count) + ' ' + str(0) + '\n'
+    output_data += ' '.join(map(str, solution))
+
+    return output_data
+
+
+import sys
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        file_location = sys.argv[1].strip()
+        input_data_file = open(file_location, 'r')
+        input_data = ''.join(input_data_file.readlines())
+        input_data_file.close()
+        print solve_it(input_data)
+    else:
+        print 'This test requires an input file.  Please select one from the data directory. (i.e. python solver.py ./data/gc_4_1)'

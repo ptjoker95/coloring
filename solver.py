@@ -1,47 +1,73 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-def coloring( edges, solution, node_count, ith ):
-    if not 0 in solution:
-        return
-    #nodes는 node들의 edge수를 넣는 리스트
-    nodes = [0]*node_count
-    #nodes에 각 node별 edge의 갯수를 더한다.
+# 어떤 노드에 연결되어 있는 노드 중에 색칠이 칠해져있는지 확인해주고, 무슨 색이 칠해져있는지 확인해주는 함수
+def IsThereColoredNode ( node, edges, solution ):
+    trueorfalse = False
+    ColoredConnected = []
+    
+    # edge 리스트를 죽 흝어본다.
     for edge in edges:
-        nodes[edge[0]] += 1
-        nodes[edge[1]] += 1
-    #print"nodes: ", nodes
+        # edge 리스트 중에 찾고자 하는 노드가 있으면
+        if node in edge:
+            # edge에서 찾고자 하는 노드를 빼고 다른 노드에 색깔이 칠해져있는지, 이 경우에는 0 이외의 숫자, 확인
+            temp = list(edge)
+            temp.remove(node)
+            if solution[temp[0]] is not 0:
+                # 일단은 칠해져있는 모든 노드를 리턴해본다. temp는 칠해져있는 노드의 인덱스, solution[temp]는 칠해져있는 값 
+                ColoredConnected = [ temp, solution[temp] ]
+                trueorfalse = True
+    return trueorfalse, ColoredConnected
+
+def ConnectedNodes( SelectedNode, edges ):
+    # 연결되어 있는 노드를 담을 리스트
+    ConnectedNodes = []
     
-    #가장 많은 edge를 가지고 있는 node의 index를 찾아낸다.
-    index = nodes.index(max(nodes))
-    if(solution[index] == 0):
-        solution[index] = ith
-    else:
-        ith = max(solution)
-    #print"index: ", index
-    #ith는 i번째 색깔이라는 의미임
-    
-    #print "solution: ", solution
-    #print "before edges: ", edges
-    #선택된 node에 연결되어 있는 edge를 다 찾아다니며 색칠을 한다. 다만, 이미 색칠이 칠해져있는 경우에는 패스한다.
+    # edge를 죽 훑어본다.
     for edge in edges:
-        #print "edge[0]: ", edge[0], " ,edge[1]: ", edge[1]
-        if edge[0] == index:
-            if solution[edge[1]] == 0:
-                solution[edge[1]] = ith+1
-            edges.remove(edge)
-                #printedges
-        if edge[1] == index:
-            if solution[edge[0]] == 0:
-                #print"here 2"
-                solution[edge[0]] = ith+1
-            edges.remove(edge)
-                #printedges
+        if SelectedNode in edge:
+            temp = list(edge)
+            temp.remove(SelectedNode)
+            tempint = int(temp[0])
+            ConnectedNodes.append(tempint)
+            
+    return ConnectedNodes
+
+# 연결되어 있는 node중에 색이 칠해져있는게 있는지 확인해서, 안 칠해져있으면 True, 칠해져있으면 False와 칠해져있는 값 리턴
+def IsNotThereColoredNode(checknode, nodes, solution, edges):
+    for edge in edges:
+        if checknode in edge:
+            temp = list(edge)
+            temp.remove(checknode)
+            #print solution[temp[0]]
+
+def Coloring( nodes, solution, Color, edges ):
+    for node in nodes:
+        if IsNotThereColoredNode(node, nodes, solution, edges):
+            solution[node] = Color
+    return
+
+def ColoringNode( index, edges, solution, node_count, Color ):
+    #연결되어있는 node의 리스트 생성
+    CNodes = ConnectedNodes( index, edges )
     
-    #print "after edges: ", edges
+    #연결되어 있는 node의 색깔을 받는다.
+    CNColors = []
+    for cn in CNodes:
+        CNColors.append(solution[cn])
     
-    coloring( edges, solution, node_count, ith+1 )
+    #print "index: ", index, " CNodes: ",  CNodes, "CNColors: ", CNColors
     
+    #0부터 node의 숫자만큼의 색깔 중에서 가장 낮은 숫자를 칠한다. 
+    for i in range(0, node_count):
+        if not i in CNColors:
+            #print "ith solution color: ", i
+            solution[index] = i
+            return
+    
+    solution[index] = Color
+    return 
+
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
 
@@ -57,27 +83,34 @@ def solve_it(input_data):
         line = lines[i]
         parts = line.split()
         edges.append((int(parts[0]), int(parts[1])))
+        
+    solution = [-1]*node_count
     
-    solution = [0] * node_count
-    #edge의 갯수가 많은 node를 찾는다
+    # 각 node별로 edge들의 갯수를 구한다.
+    NodesHaveEdgenum = [0]*node_count
     
-    coloring( edges, solution, node_count, 1 )
-    '''
-    index = nodes.index(max(nodes))
-        print "index: ", index 
-        solution[index] = i
-        print "solution: ", solution
-        nodes[index] = 0
-        for edge in edges:
-            if edge[0] is index or edge[1] is index:
-                print "this node"
-    '''
-    # build a trivial solution
-    # every node has its own color
+    for edge in edges:
+        NodesHaveEdgenum[edge[0]] += 1
+        NodesHaveEdgenum[edge[1]] += 1
+        
+    # 각 node별로 edge의 수가 많은 순으로 사전 정렬
+    WeightedIndex = []
+ 
+       
+    for i in range(0, node_count):
+        WeightedIndex.append( [i,NodesHaveEdgenum[i]] )
+        
+    WeightedIndex = sorted( WeightedIndex, key=lambda WeightedIndex:WeightedIndex[1], reverse=True )
+    #사전 정렬 끝.
     
-    #애초에 색칠을 1부터 시작해서, solution의 값들에서 1을 빼준다.
-    solution[:] = [x - 1 for x in solution]
-
+    #계산이 끝난 후 solution에서 각각 1을 빼야됨
+    
+    #많아봐야 노드 갯수 이상의 색을 칠할 필요는 없으므로 loop의 한계는 node수로 한계지어놓는다.
+    for i, index in enumerate(WeightedIndex):
+        #node의 index를 주면 해당 node에 가장 작은 색을 칠한다.
+        #print "index[0]: ", index[0], " ,edges: ", edges, " ,solution: ", solution, " ,i: ", i
+        ColoringNode( index[0], edges, solution, node_count, i )
+        
     # prepare the solution in the specified output format
     output_data = str(node_count) + ' ' + str(0) + '\n'
     output_data += ' '.join(map(str, solution))
